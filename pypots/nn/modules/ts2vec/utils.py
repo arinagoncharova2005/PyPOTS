@@ -31,14 +31,35 @@ def generate_binomial_mask(B, T, p=0.5):
 
 
 def torch_pad_nan(arr, left=0, right=0, dim=0):
+    """
+    arr: Torch tensor (possibly on CUDA)
+    Creates padding on the SAME device as arr.
+    """
+
+    # If we need left padding
     if left > 0:
         padshape = list(arr.shape)
         padshape[dim] = left
-        arr = torch.cat((torch.full(padshape, np.nan), arr), dim=dim)
+        left_pad = torch.full(
+            padshape,
+            float("nan"),
+            device=arr.device,     # <<< FIX: use arr.device
+            dtype=arr.dtype,
+        )
+        arr = torch.cat((left_pad, arr), dim=dim)
+
+    # If we need right padding
     if right > 0:
         padshape = list(arr.shape)
         padshape[dim] = right
-        arr = torch.cat((arr, torch.full(padshape, np.nan)), dim=dim)
+        right_pad = torch.full(
+            padshape,
+            float("nan"),
+            device=arr.device,     # <<< FIX: use arr.device
+            dtype=arr.dtype,
+        )
+        arr = torch.cat((arr, right_pad), dim=dim)
+
     return arr
 
 
